@@ -2,6 +2,7 @@
 layout: page
 title: About
 comments: yes
+default_locale: "cn"
 permalink: /about/
 ---
 
