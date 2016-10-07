@@ -1,28 +1,29 @@
 ### Site info:
-title: Freshman21
-tagline: Another Jekyll theme, Freshman twenty-first
-author: Lijia Yu
-email: yu@lijiayu.net
-description: "Freshman21 is a Jekyll blog theme." # You can edit this line in _config.yml. It will appear in your document head meta and in your feed.xml site description
-keywords: "Jekyll, theme, Freshman21"
+title: Springlustre的主页
+tagline: springlustre's blog,  geek, development engineering, blog
+author: springlustre
+email: wangchunze@126.com
+description: "this is the blog of springlustre" # You can edit this line in _config.yml. It will appear in your document head meta and in your feed.xml site description
+keywords: "blog, springlustre, progrem"
 baseurl: "" # the subpath of your site, e.g. /blog/
-url: "http://yulijia.net/freshman21" # the base hostname & protocol for your site
-locale: en_US
+url: "http://springlustre.github.io" # the base hostname & protocol for your site
+permalink: /:year/:month/:day/:title
+#locale: cn
 
 ### Personal info and site tools info:
-twitter_username: yulijia
-github_username:  yulijia
-disqus_shortname: freshman21
+#twitter_username: yulijia
+github_username:  springlustre
+disqus_shortname: 王春泽
 favicon:     "/images/favicon.ico"
-aboutme: Hi, this is Lijia Yu. I made the Freshman21 theme. Please enjoy it. # these are shown on aboutme-sidebar.
-aboutme_photo: https://i.imgur.com/Mdc4szJl.jpg# your photo.
+aboutme: Hi, this is Chunze Wang. This is my blog. Please enjoy it. # these are shown on aboutme-sidebar.
+aboutme_photo: "/images/my.jpg" #https://i.imgur.com/Mdc4szJl.jpg # your photo.
 google_analytics_key: UA-57979084-1 # put YOUR key here to enable tracking! (blank to disable)
 
 
 ### Site setting:
 ShowContactInfo: "True" # Personal Info (twitter,github,email) can be seen on aboutme-sidebar, those info only shown where ShowContactInfo == True
 default_column: "two" # blog style: two columns, if default_column != "two", you will see a one column blog.
-default_locale: "en" # blog sidebar language set, only include: English (en), Chinese (cn), Japanese (jp), Polish (pl), Korean (kr) and Russian (ru) 
+default_locale: "cn" # blog sidebar language set, only include: English (en), Chinese (cn), Japanese (jp), Polish (pl), Korean (kr) and Russian (ru)
 
 locales:
     en:
@@ -37,7 +38,7 @@ locales:
       Next: "Newer"
       PostedInCategories: "Posted in"
       Taggedwith: "and tagged"
-      PostDate: "on "
+      PostDate: "on"
       Google_search: "Site Search"
       Home: "Home"
       About: "About"
@@ -137,12 +138,9 @@ locales:
 ### your Blogroll info, only name can shown on the page.
 
 Blogroll:
-      - name: Freshman
-        href: http://yulijia.net/freshman
+      - name: 王春泽
+        href: http://springlustre.github.io
         title: Another Jekyll blog theme
-      - name: author's website
-        href: http://yulijia.net/
-        title: Lijia Yu's website
 
 
 ### Build settings

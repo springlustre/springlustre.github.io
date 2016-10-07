@@ -6,22 +6,23 @@ permalink: /about/
 ---
 
 
-### Freshman21 is a Jekyll theme.
+### This is wangchunze's blog
 
-A tribute to Twenty Twelve and Twenty eleven.
+welcome to my blog.
 
-I like wordpress's theme Twenty Twelve and Twenty eleven very much. 
-So I called my Jekyll theme Freshman21 (Freshman <q>twenty-first</q> , it means twenty-first century, not twenty-one), this theme is based on my former theme [Freshman](https://github.com/yulijia/freshman/).
+I am a master studying at BUPT and a development engineering working in EB. 
+I major in Big Data, Cloud Computing and Artificial Intelligence. I am skill at Scala language and the ecology of scala such as PlayFramework, Akka-http, Spark and so on.
 
-Freshman21 have two main page format, one is [single column](http://yulijia.net/en/  "see demo"), the other is two columns. For more details, please see the articles on the site.
+I used to write Java, so I am familiar with Java, Spring, Hibernate, and familiar with Front-end development such as Html5, css, javascript, JQuery and so on.
 
-<cite>Proudly enjoy using Freshman21 theme.</cite> <code>;)</code>
+In addition, I am learning about machine learning.
 
-<img title="麋鹿" src="https://i.imgur.com/Mdc4szJl.jpg" alt="麋鹿" width="580" height="668" />
 
-#### Hi, the picture you have seen in the sample-page is a Père David's deer photoed by my friend at Beijing Milu Park, China.
+<img title="我" src="/images/my.jpg" alt="my" width="580" height="668" />
 
-Milu(麋鹿) is the chinese name of Père David's deer.
+#### this is me, a boy who is 22 years old
+
+Besides, I am an outdoor sports and street sports enthusiast, Climbing, Ski, Diving,Riding, Motorcycle racing, Boxing, Playing Skateboard...
 
 
 
