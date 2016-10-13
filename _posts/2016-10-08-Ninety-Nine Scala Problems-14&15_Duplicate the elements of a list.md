@@ -2,7 +2,7 @@
 layout: post
 title: Ninety-Nine Scala Problems-14&15_Duplicate the elements of a list
 excerpt: "the 14th and 15th of Ninety-Nine Scala Problems: Modified run-length encoding. scala-99题的第14、15道"
-categories: Ninety-Nine Scala Problems
+categories: Ninety-Nine-Scala-Problems
 tags: [scala]
 comments: true
 ---

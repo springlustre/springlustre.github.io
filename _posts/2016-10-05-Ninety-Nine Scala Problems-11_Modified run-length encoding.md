@@ -2,7 +2,7 @@
 layout: post
 title: Ninety-Nine Scala Problems-11_Modified run-length encoding
 excerpt: "the 11th of Ninety-Nine Scala Problems: Modified run-length encoding. scala-99题的第11道"
-categories: Ninety-Nine Scala Problems
+categories: Ninety-Nine-Scala-Problems
 tags: [scala]
 comments: true
 ---

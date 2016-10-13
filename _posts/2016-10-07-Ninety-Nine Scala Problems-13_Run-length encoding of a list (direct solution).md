@@ -2,7 +2,7 @@
 layout: post
 title: Ninety-Nine Scala Problems-13_Run-length encoding of a list (direct solution)
 excerpt: "the 13th of Ninety-Nine Scala Problems: Modified run-length encoding. scala-99题的第13道"
-categories: Ninety-Nine Scala Problems
+categories: Ninety-Nine-Scala-Problems
 tags: [scala]
 comments: true
 ---

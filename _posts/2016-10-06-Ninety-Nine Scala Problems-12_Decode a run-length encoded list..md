@@ -2,7 +2,7 @@
 layout: post
 title: Ninety-Nine Scala Problems-12_Decode a run-length encoded list
 excerpt: "the 12th of Ninety-Nine Scala Problems: Modified run-length encoding. scala-99题的第12道"
-categories: Ninety-Nine Scala Problems
+categories: Ninety-Nine-Scala-Problems
 tags: [scala]
 comments: true
 ---
