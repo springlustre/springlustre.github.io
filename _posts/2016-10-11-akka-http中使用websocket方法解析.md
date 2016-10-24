@@ -40,6 +40,8 @@ ws是普通的WebSocket通信协议，而wss是安全的WebSocket通信协议(�
 
 ## akka-http中 WebSocket的使用
 
+### 模型 model
+
 Akka HTTP提供了基于流的WebSocket协议实现，隐藏了底层二进制框架线协议的底层细节，并提供了一个简单的API来使用WebSocket实现服务。
 
 Akka HTTP为这个抽象提供了一个直接的模型：
@@ -69,6 +71,7 @@ sealed trait BinaryMessage extends Message {
 }
 
 ```
+
 消息的数据作为流提供的，因为WebSocket消息没有预定义的大小，并且可以（在理论上）无限长。 然而，对于WebSocket连接的每个方向只能打开一个消息，使得许多应用级协议将希望利用对（小）消息的描述来传送单个应用级数据单元，例如“一个事件”或“一个聊天消息“。
 
 许多消息足够小以便一次发送或接收。作为优化的机会，该模型为每种类型的消息提供了严格的子类，其包含作为严格（即非流）字节字符串或字符串的数据。
@@ -78,57 +81,109 @@ sealed trait BinaryMessage extends Message {
 对于发送数据，使用TextMessage.apply（text：String）创建一个严格的消息，当完整的消息已经被汇编时，
 这通常是自然的选择。否则，使用TextMessage.apply（textStream：Source [String，Any]）从Akka Stream源创建流式传输消息。
 
+### Server API
 
 
-RDD本质上是一个内存数据集，在访问RDD时，指针只会指向与操作相关的部分。例如存在一个面向列的数据结构，其中一个实现为Int的数组，另一个实现为Float的数组。如果只需要访问Int字段，RDD的指针可以只访问Int数组，避免了对整个数据结构的扫描。
+WebSocket API的入口点是合成的UpgradeToWebSocket头信息，如果Akka HTTP遇到WebSocket 的upquest请求，则会将其添加到请求中。
 
-RDD将操作分为两类：transformation与action。无论执行了多少次transformation操作，RDD都不会真正执行运算，只有当action操作被执行时，运算才会触发。而在RDD的内部实现机制中，底层接口则是基于迭代器的，从而使得数据访问变得更高效，也避免了大量中间结果对内存的消耗。
+WebSocket规范要求通过将特殊目的HTTP头放入HTTP升级的请求和响应来协商WebSocket连接的细节。在Akka HTTP中，WebSocket握手的这些HTTP级别详细信息对应用程序是隐藏的，不需要手动管理。
 
-在实现时，RDD针对transformation操作，都提供了对应的继承自RDD的类型，例如map操作会返回MappedRDD，而flatMap则返回FlatMappedRDD。当我们执行map或flatMap操作时，不过是将当前RDD对象传递给对应的RDD对象而已.
+相反，合成的UpgradeToWebSocket表示有效的WebSocket升级请求。应用程序可以通过查找UpgradeToWebSocket标头来检测WebSocket升级请求。它可以选择接受升级并通过使用由UpgradeToWebSocket.handleMessagesWith方法之一生成的HttpResponse响应该请求来启动WebSocket连接。在其最通常的形式中，这个方法期望两个参数：第一，handler Flow[Message, Message, Any]，将用于处理此连接上的WebSocket消息。其次，应用程序可以通过检查UpgradeToWebSocket.requestedProtocols的值来选择一个所提出的应用程序级子协议，并将所选的协议值传递给handleMessages。
 
-以下面一个按 A-Z 首字母分类，查找相同首字母下不同姓名总个数的例子来看一下 RDD 是如何运行起来的。
-![Elaphurus davidianus](http://images0.cnblogs.com/blog/107289/201508/111610089731588.jpg)
+### Handling Messages
 
-步骤 1 ：创建 RDD  
+消息处理程序应被实现为Flow[Message, Message, Any]。 对于典型的请求 - 响应场景，这非常适合，并且可以通过使用Flow [Message] .map或Flow [Message] .mapAsync从简单的函数构造这样的Flow。
 
-上面的例子除去最后一个 collect 是个动作，不会创建 RDD 之外，前面四个转换都会创建出新的 RDD 。因此第一步就是创建好所有 RDD( 内部的五项信息 ) 。
+还有其他用例，例如。 在server-push模型中，其中服务器消息被自发地发送，或者在输入和输出不是逻辑连接的真正的bi-directional场景中。 在这些情况下将handler提供为Flow可能不适合。 另一种方法,UpgradeToWebSocket.handleMessagesWithSinkSource，其允许独立地传递输出生成Source [Message，Any]和输入接收Sink [Message，Any]。
 
-步骤 2 ：创建执行计划 
+注意，需要一个处理程序来消费每个消息的数据流，以便为新消息留出空间。 否则，后续消息可能被阻塞，并且该方向上的消息业务将停止。
 
-Spark 会尽可能地管道化，并基于是否要重新组织数据来划分阶段 (stage) ，例如本例中的 groupBy() 转换就会将整个执行计划划分成两阶段执行。最终会产生一个 DAG(directed acyclic graph ，有向无环图 ) 作为逻辑执行计划。
-![Elaphurus davidianus](http://images0.cnblogs.com/blog/107289/201508/111610154426712.jpg)
+### Example
 
-步骤 3 ：调度任务  
+WebSocket请求就像任何其他请求一样。 在示例中，对 / greeter的请求应为WebSocket请求：
 
-将各阶段划分成不同的 任务 (task) ，每个任务都是数据和计算的合体。在进行下一阶段前，当前阶段的所有任务都要执行完成。因为下一阶段的第一个转换一定是重新组织数据的，所以必须等当前阶段所有结果数据都计算出来了才能继续。
-
-
-### 懒惰计算
-
-懒惰计算（lazy evaluation）：Spark在遇到 Transformations操作时只会记录需要这样的操作，并不会去执行，需要等到有Actions操作的时候才会真正启动计算过程进行计算。（不像Python和matlab马上执行）。
-
-
-
-## Spark 安装
-
-### 安装jdk和scala
-
-下载安装JDK：https://www.oracle.com/index.html 并配置环境变量，不再详述。
-
-下载Scala： http://www.scala-lang.org/。
-解压缩：tar –zxvf scala-2.10.6.tgz。
-进入sudo vim /etc/profile 在下面添加路径：
 ```
-SPARK_HOME=/home/spark/spark-1.5.1-bin-hadoop2.6
-PATH=$PATH:${SCALA_HOME}/bin
-``` 
-使修改生效source /etc/profile。
-在命令行输入scala测试。
+val requestHandler: HttpRequest => HttpResponse = {
+  case req @ HttpRequest(GET, Uri.Path("/greeter"), _, _, _) =>
+    req.header[UpgradeToWebSocket] match {
+      case Some(upgrade) => upgrade.handleMessages(greeterWebSocketService)
+      case None          => HttpResponse(400, entity = "Not a valid websocket request!")
+    }
+  case r: HttpRequest =>
+    r.discardEntityBytes() // important to drain incoming HTTP Entity stream
+    HttpResponse(404, entity = "Unknown resource!")
+}
 
-进入spark的bin目录
-输入run-example org.apache.spark.examples.SparkPi 
-出现如下结果则安装成功
+```
 
-![Elaphurus davidianus](../../../images/2016_10_16_1.png)
+它使用路径上的模式匹配，然后检查请求以查询UpgradeToWebSocket标头。 如果找到这样的header，它被用于通过传递WebSocket消息的处理程序到handleMessages方法来生成响应。 如果没有找到这样的报头，则生成“400 Bad Request”响应。
 
+传递的处理程序需要文本消息，其中每个消息都应包含一个名字，然后用另一个包含greeting的文本消息进行响应：
 
+```
+// The Greeter WebSocket Service expects a "name" per message and
+// returns a greeting message for that name
+val greeterWebSocketService =
+  Flow[Message]
+    .mapConcat {
+      // we match but don't actually consume the text message here,
+      // rather we simply stream it back as the tail of the response
+      // this means we might start sending the response even before the
+      // end of the incoming message has been received
+      case tm: TextMessage => TextMessage(Source.single("Hello ") ++ tm.textStream) :: Nil
+      case bm: BinaryMessage =>
+        // ignore binary messages but drain content to avoid the stream being clogged
+        bm.dataStream.runWith(Sink.ignore)
+        Nil
+    }
+
+```
+
+### Routing support
+
+如果请求是WebSocket请求，则路由DSL提供handleWebSocketMessages指令来安装WebSocket处理程序。 否则，指令拒绝请求。
+
+这里是上面的简单请求处理程序重写为路由：
+
+```
+def greeter: Flow[Message, Message, Any] =
+  Flow[Message].mapConcat {
+    case tm: TextMessage =>
+      TextMessage(Source.single("Hello ") ++ tm.textStream ++ Source.single("!")) :: Nil
+    case bm: BinaryMessage =>
+      // ignore binary messages but drain content to avoid the stream being clogged
+      bm.dataStream.runWith(Sink.ignore)
+      Nil
+  }
+val websocketRoute =
+  path("greeter") {
+    handleWebSocketMessages(greeter)
+  }
+ 
+// tests:
+// create a testing probe representing the client-side
+val wsClient = WSProbe()
+ 
+// WS creates a WebSocket request for testing
+WS("/greeter", wsClient.flow) ~> websocketRoute ~>
+  check {
+    // check response for WS Upgrade headers
+    isWebSocketUpgrade shouldEqual true
+ 
+    // manually run a WS conversation
+    wsClient.sendMessage("Peter")
+    wsClient.expectMessage("Hello Peter!")
+ 
+    wsClient.sendMessage(BinaryMessage(ByteString("abcdef")))
+    wsClient.expectNoMessage(100.millis)
+ 
+    wsClient.sendMessage("John")
+    wsClient.expectMessage("Hello John!")
+ 
+    wsClient.sendCompletion()
+    wsClient.expectCompletion()
+  }
+
+```
+
+该示例还包括演示testkit对WebSocket服务的支持的代码。 它允许创建WebSocket请求以使用WS运行路由，可以用于提供一个模拟的WebSocket探针，允许手动测试WebSocket处理程序的行为，如果请求被接受。
