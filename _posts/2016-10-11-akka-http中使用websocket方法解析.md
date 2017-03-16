@@ -187,3 +187,135 @@ WS("/greeter", wsClient.flow) ~> websocketRoute ~>
 ```
 
 该示例还包括演示testkit对WebSocket服务的支持的代码。 它允许创建WebSocket请求以使用WS运行路由，可以用于提供一个模拟的WebSocket探针，允许手动测试WebSocket处理程序的行为，如果请求被接受。
+
+
+## 示例
+
+UserWsService.scala
+
+```
+trait UserWsService{
+  import io.circe.generic.auto._
+  import io.circe._
+  import io.circe.parser._
+  import io.circe.syntax._
+  import cats.syntax.either._
+
+  private val log = LoggerFactory.getLogger(this.getClass)
+
+  implicit val system: ActorSystem
+
+  implicit val materializer: Materializer
+
+  implicit val timeout: Timeout
+
+  lazy val userPlay = UserChatWebSocket.create(system)
+
+  val userWsRoutes = pathPrefix("user"){
+    data
+  }
+
+  private val data = (path("userWs") & get & pathEndOrSingleSlash) {
+    parameters(
+      'roomId.as[Long]
+    ) { case (roomId) =>
+        handleWebSocketMessages(webSocketChatFlow(roomId))              
+    }
+  }
+
+  def webSocketChatFlow(roomId:Long): Flow[Message,Message,Any] =
+    Flow[Message]
+      .collect {
+        case TextMessage.Strict(msg) =>
+          msg
+      }.via(UserChatWebSocket.create(system).enterRoom(roomId)).map{
+      case msg: String => TextMessage.Strict(msg.toString)
+      case _ => TextMessage.Strict("error")
+    }.withAttributes(ActorAttributes.supervisionStrategy(decider))
+
+  val decider: Supervision.Decider = {
+    e: Throwable =>
+      e.printStackTrace()
+      Supervision.Resume
+  }
+
+}
+
+```
+
+UserChatWebSocket.scala
+
+```
+trait UserChatWebSocket {
+
+  def enterRoom(roomId:Long): Flow[String,UserWsData,Any]
+
+}
+
+object UserChatWebSocket{
+  val log = LoggerFactory.getLogger(this.getClass)
+  implicit val timeout = Timeout(10.seconds)
+
+  def create(system: ActorSystem)(implicit executor: ExecutionContext): UserChatWebSocket = {
+    val userWsActor =
+      system.actorOf(Props(new Actor {
+        override def preStart(): Unit = {
+          log.info(s"${self.path} is starting...")
+        }
+
+        override def postStop(): Unit = {
+          log.info(s"${self.path} is stopping...")
+        }
+
+        def receive: Receive = {
+          // enter the chat room, message that send to sub will send to client
+          case Enter(rId,sub) =>
+           log.info("enter")
+
+          // receive the single message from ChatRoomActor
+          case msg:String =>
+            log.info(s"room receive msg:"+msg)
+
+          case Leave(roomId) =>        
+            self ! PoisonPill
+
+          case unknow@_ =>
+            log.info(s"receive unknow msg:$unknow")
+        }
+
+
+      })
+      )
+
+
+
+    def playInSink(roomId: Long) = Sink.actorRef[UserEvent](userWsActor, Leave(roomId))
+
+    new UserChatWebSocket {
+      override def enterRoom(roomId: Long):Flow[String,UserWsData,Any] = {
+        val in =
+          Flow[String]
+            .map { s =>
+              Handle(s)
+            }
+            .to(playInSink(roomId))
+
+        val out =
+          Source.actorRef[UserWsData](3, OverflowStrategy.dropHead)
+            .mapMaterializedValue(outActor =>
+              userWsActor ! Enter(roomId,outActor)
+            )
+
+        Flow.fromSinkAndSource(in, out)
+      }
+    }
+
+  }
+
+  private sealed trait UserEvent
+
+  private case class Leave(roomId: Long) extends UserEvent
+
+}
+
+```
