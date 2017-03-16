@@ -31,7 +31,7 @@ layout: default
     </header>
 
     <article class="post-content" itemprop="articleBody">
-      {{ post.content.slice[0..200] }}
+      {{ post.content | strip_html | truncatewords: 30 }}
     </article> <hr />
     
     {% endfor %}
