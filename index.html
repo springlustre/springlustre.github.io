@@ -31,7 +31,7 @@ layout: default
     </header>
 
     <article class="post-content" itemprop="articleBody">
-      {{ post.content }}
+      {{ post.content[0,200] }}
     </article> <hr />
     
     {% endfor %}
