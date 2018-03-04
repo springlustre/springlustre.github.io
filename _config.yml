@@ -3,6 +3,8 @@ title: Springlustre的主页
 tagline: springlustre's blog,  geek, development engineering, blog
 author: springlustre
 email: wangchunze@126.com
+csdn:CSDN博客
+wechat:微信号
 description: "this is the blog of springlustre" # You can edit this line in _config.yml. It will appear in your document head meta and in your feed.xml site description
 keywords: "blog, springlustre, progrem"
 baseurl: "" # the subpath of your site, e.g. /blog/
