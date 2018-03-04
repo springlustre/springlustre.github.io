@@ -1,4 +1,4 @@
-### Site info:
+﻿### Site info:
 title: Springlustre的主页
 tagline: springlustre's blog,  geek, development engineering, blog
 author: springlustre
@@ -11,11 +11,11 @@ permalink: /:year/:month/:day/:title
 #locale: cn
 
 ### Personal info and site tools info:
-#twitter_username: yulijia
+#twitter_username: 
 github_username:  springlustre
 disqus_shortname: 王春泽
 favicon:     "/images/favicon.ico"
-aboutme: Hi, this is Chunze Wang. This is my blog. Please enjoy it. # these are shown on aboutme-sidebar.
+aboutme: Hi, this is Chunze Wang's home # these are shown on aboutme-sidebar.
 aboutme_photo: "/images/my.jpg" #https://i.imgur.com/Mdc4szJl.jpg # your photo.
 google_analytics_key: UA-57979084-1 # put YOUR key here to enable tracking! (blank to disable)
 
@@ -46,10 +46,8 @@ locales:
       Subscribe: "Subscribe"
     cn:
       Aboutme: "关于我"
-      Archives: "存档"
-      Blogroll: "良师益友"        
+      Archives: "存档"      
       Categories: "分类目录"    
-      Copyright_Notice: "版权声明"
       Recent_Posts: "近期文章"
       Tags: "标签" 
       Previous: "前一页"
@@ -61,7 +59,6 @@ locales:
       Home: "首页"
       About: "关于"
       Guestbook: "留言"
-      Subscribe: "订阅"
     jp:
       Aboutme: "著者"
       Archives: "アーカイブ"
